@@ -226,93 +226,150 @@
         <script src="./resources/ol-layerswitcher.js"></script>
         <script src="resources/photon-geocoder-autocomplete.min.js"></script>
         
-        <!-- GitHub Release Links -->
-        <script src="https://github.com/KIAChy21/COVID19-USA-2023-Vaccination-Analysis/releases/download/V1.0/PovertyratebyCountyin2023_0.js"></script>
-        <script src="https://github.com/KIAChy21/COVID19-USA-2023-Vaccination-Analysis/releases/download/V1.0/COVID19VaccinationRate_1.js"></script>
-        <script src="https://github.com/KIAChy21/COVID19-USA-2023-Vaccination-Analysis/releases/download/V1.0/COVID19casesper1000population_2.js"></script>
-        <script src="https://github.com/KIAChy21/COVID19-USA-2023-Vaccination-Analysis/releases/download/V1.0/layers.js"></script>
+        <!-- Updated GitHub Release Links -->
+        <script src="https://github.com/KIAChy21/COVID-19-Situation-USA-2023/releases/download/V1.0/COVID19casesper1000population_2.js"></script>
+        <script src="https://github.com/KIAChy21/COVID-19-Situation-USA-2023/releases/download/V1.0/COVID19VaccinationRate_1.js"></script>
+        <script src="https://github.com/KIAChy21/COVID-19-Situation-USA-2023/releases/download/V1.0/PovertyratebyCountyin2023_0.js"></script>
+        <script src="https://github.com/KIAChy21/COVID-19-Situation-USA-2023/releases/download/V1.0/layers.js"></script>
         
+        <!-- Style files - you'll need to provide these or remove if not available -->
         <script src="styles/PovertyratebyCountyin2023_0_style.js"></script>
         <script src="styles/COVID19VaccinationRate_1_style.js"></script>
         <script src="styles/COVID19casesper1000population_2_style.js"></script>
+        
         <script src="./resources/Autolinker.min.js"></script>
         <script src="./resources/qgis2web.js"></script>
         
         <script>
-        // Layer control functionality
+        // Debug function to check what's loaded
+        function debugLayers() {
+            console.log("=== DEBUG LAYER INFORMATION ===");
+            console.log("Map object:", typeof map !== 'undefined' ? "Exists" : "UNDEFINED");
+            
+            if (typeof map !== 'undefined') {
+                const layers = map.getLayers();
+                console.log("Total layers in map:", layers.getLength());
+                
+                layers.forEach(function(layer, index) {
+                    console.log(Layer ${index}:, {
+                        title: layer.get('title'),
+                        visible: layer.getVisible(),
+                        type: layer.get('type'),
+                        className: layer.constructor.name
+                    });
+                });
+            }
+            
+            // Check global layer variables
+            console.log("Global layer variables:");
+            console.log("layer_PovertyratebyCountyin2023_0:", typeof layer_PovertyratebyCountyin2023_0);
+            console.log("layer_COVID19VaccinationRate_1:", typeof layer_COVID19VaccinationRate_1);
+            console.log("layer_COVID19casesper1000population_2:", typeof layer_COVID19casesper1000population_2);
+        }
+
+        // Enhanced layer control initialization
         document.addEventListener('DOMContentLoaded', function() {
-            // Wait for everything to load
-            setTimeout(initializeLayerControls, 1000);
+            console.log("DOM loaded, initializing map...");
+            
+            // Wait a bit longer for all scripts to load
+            setTimeout(function() {
+                initializeLayerControls();
+                // Debug after initialization
+                setTimeout(debugLayers, 500);
+            }, 2000);
         });
 
         function initializeLayerControls() {
             console.log("=== INITIALIZING LAYER CONTROLS ===");
             
-            // Add OpenStreetMap as base layer
-            var osmLayer = new ol.layer.Tile({
-                title: 'OpenStreetMap',
-                type: 'base',
-                visible: true,
-                source: new ol.source.OSM()
-            });
-            map.getLayers().insertAt(0, osmLayer);
-            console.log("✓ OpenStreetMap added");
+            // Check if map exists
+            if (typeof map === 'undefined') {
+                console.error("✗ Map object is not defined!");
+                alert("Map failed to load. Please check the browser console for errors.");
+                return;
+            }
+            
+            console.log("✓ Map object found");
 
-            // Method 1: Use global layer variables created by qgis2web
+            // Add OpenStreetMap as base layer if not already present
+            let hasOSM = false;
+            map.getLayers().forEach(function(layer) {
+                if (layer.get('title') === 'OpenStreetMap' || layer instanceof ol.layer.Tile) {
+                    hasOSM = true;
+                }
+            });
+            
+            if (!hasOSM) {
+                var osmLayer = new ol.layer.Tile({
+                    title: 'OpenStreetMap',
+                    type: 'base',
+                    visible: true,
+                    source: new ol.source.OSM()
+                });
+                map.getLayers().insertAt(0, osmLayer);
+                console.log("✓ OpenStreetMap base layer added");
+            }
+
+            // Find layers using multiple methods
             let povertyLayer, vaccinationLayer, casesLayer;
             
-            // Check for global layer variables
+            // Method 1: Check global variables (from your JS files)
             if (typeof layer_PovertyratebyCountyin2023_0 !== 'undefined') {
                 povertyLayer = layer_PovertyratebyCountyin2023_0;
-                console.log("✓ Poverty layer found (global variable)");
+                console.log("✓ Poverty layer found via global variable");
             }
-            
             if (typeof layer_COVID19VaccinationRate_1 !== 'undefined') {
                 vaccinationLayer = layer_COVID19VaccinationRate_1;
-                console.log("✓ Vaccination layer found (global variable)");
+                console.log("✓ Vaccination layer found via global variable");
             }
-            
             if (typeof layer_COVID19casesper1000population_2 !== 'undefined') {
                 casesLayer = layer_COVID19casesper1000population_2;
-                console.log("✓ Cases layer found (global variable)");
+                console.log("✓ Cases layer found via global variable");
             }
 
-            // Method 2: If global variables not found, search in map layers
+            // Method 2: Search by layer title in map
             if (!povertyLayer || !vaccinationLayer || !casesLayer) {
-                console.log("Searching for layers in map...");
+                console.log("Searching for layers by title...");
                 map.getLayers().forEach(function(layer) {
                     const title = layer.get('title');
-                    console.log("Map layer:", title);
+                    if (!title) return;
                     
-                    if (title && title.includes('Poverty')) {
+                    console.log("Found layer with title:", title);
+                    
+                    if (title.includes('Poverty') || title.includes('poverty')) {
                         povertyLayer = layer;
-                        console.log("✓ Poverty layer identified in map");
-                    } else if (title && title.includes('Vaccination')) {
+                        console.log("✓ Identified as Poverty layer");
+                    } else if (title.includes('Vaccination') || title.includes('vaccination')) {
                         vaccinationLayer = layer;
-                        console.log("✓ Vaccination layer identified in map");
-                    } else if (title && title.includes('Cases')) {
+                        console.log("✓ Identified as Vaccination layer");
+                    } else if (title.includes('Cases') || title.includes('cases')) {
                         casesLayer = layer;
-                        console.log("✓ Cases layer identified in map");
+                        console.log("✓ Identified as Cases layer");
                     }
                 });
             }
 
-            // Method 3: Last resort - check layer order (usually data layers are last)
+            // Method 3: Use layer order (data layers are typically added last)
             if (!povertyLayer || !vaccinationLayer || !casesLayer) {
                 console.log("Trying to identify layers by position...");
                 const layers = map.getLayers().getArray();
-                // Usually base layers first, then data layers
-                for (let i = layers.length - 1; i >= 0; i--) {
-                    if (!povertyLayer && layers[i].get('type') !== 'base') {
-                        povertyLayer = layers[i];
-                        console.log("✓ Assigned layer as Poverty (by position)");
-                    } else if (!vaccinationLayer && layers[i].get('type') !== 'base' && layers[i] !== povertyLayer) {
-                        vaccinationLayer = layers[i];
-                        console.log("✓ Assigned layer as Vaccination (by position)");
-                    } else if (!casesLayer && layers[i].get('type') !== 'base' && layers[i] !== povertyLayer && layers[i] !== vaccinationLayer) {
-                        casesLayer = layers[i];
-                        console.log("✓ Assigned layer as Cases (by position)");
+                const dataLayers = [];
+                
+                // Collect non-base layers
+                for (let i = 0; i < layers.length; i++) {
+                    if (layers[i].get('type') !== 'base') {
+                        dataLayers.push(layers[i]);
                     }
+                }
+                
+                console.log("Found", dataLayers.length, "data layers");
+                
+                // Assign by position if we have exactly 3 layers
+                if (dataLayers.length >= 3) {
+                    povertyLayer = dataLayers[0];
+                    vaccinationLayer = dataLayers[1];
+                    casesLayer = dataLayers[2];
+                    console.log("✓ Assigned layers by position");
                 }
             }
 
@@ -321,71 +378,78 @@
                 povertyLayer.setVisible(true);
                 console.log("✓ Poverty layer set to VISIBLE");
             } else {
-                console.log("✗ Poverty layer NOT FOUND");
+                console.error("✗ Poverty layer NOT FOUND");
             }
             
             if (vaccinationLayer) {
                 vaccinationLayer.setVisible(false);
                 console.log("✓ Vaccination layer set to HIDDEN");
             } else {
-                console.log("✗ Vaccination layer NOT FOUND");
+                console.error("✗ Vaccination layer NOT FOUND");
             }
             
             if (casesLayer) {
                 casesLayer.setVisible(false);
                 console.log("✓ Cases layer set to HIDDEN");
             } else {
-                console.log("✗ Cases layer NOT FOUND");
+                console.error("✗ Cases layer NOT FOUND");
             }
 
-            // Setup event handlers
+            // Setup checkbox event handlers
+            setupCheckboxHandlers(povertyLayer, vaccinationLayer, casesLayer);
+            
+            console.log("=== LAYER CONTROLS INITIALIZATION COMPLETE ===");
+            
+            // Force map refresh
+            map.updateSize();
+            map.render();
+        }
+
+        function setupCheckboxHandlers(povertyLayer, vaccinationLayer, casesLayer) {
             const povertyCheckbox = document.getElementById('checkbox-poverty');
             const vaccinationCheckbox = document.getElementById('checkbox-vaccination');
             const casesCheckbox = document.getElementById('checkbox-cases');
 
             // Poverty layer control
-            povertyCheckbox.addEventListener('change', function(e) {
-                console.log("Poverty checkbox:", e.target.checked);
-                if (povertyLayer) {
+            if (povertyLayer && povertyCheckbox) {
+                povertyCheckbox.addEventListener('change', function(e) {
+                    console.log("Poverty checkbox changed to:", e.target.checked);
                     povertyLayer.setVisible(e.target.checked);
-                    console.log("✓ Poverty visibility updated to:", e.target.checked);
-                }
-            });
+                });
+            }
 
             // Vaccination layer control
-            vaccinationCheckbox.addEventListener('change', function(e) {
-                console.log("Vaccination checkbox:", e.target.checked);
-                if (vaccinationLayer) {
+            if (vaccinationLayer && vaccinationCheckbox) {
+                vaccinationCheckbox.addEventListener('change', function(e) {
+                    console.log("Vaccination checkbox changed to:", e.target.checked);
                     vaccinationLayer.setVisible(e.target.checked);
-                    console.log("✓ Vaccination visibility updated to:", e.target.checked);
-                }
-            });
+                });
+            }
 
             // Cases layer control
-            casesCheckbox.addEventListener('change', function(e) {
-                console.log("Cases checkbox:", e.target.checked);
-                if (casesLayer) {
+            if (casesLayer && casesCheckbox) {
+                casesCheckbox.addEventListener('change', function(e) {
+                    console.log("Cases checkbox changed to:", e.target.checked);
                     casesLayer.setVisible(e.target.checked);
-                    console.log("✓ Cases visibility updated to:", e.target.checked);
-                }
-            });
+                });
+            }
 
             // Add click handlers for labels
             document.querySelectorAll('.layer-label').forEach(function(label) {
                 label.addEventListener('click', function() {
                     const checkbox = this.previousElementSibling;
-                    checkbox.checked = !checkbox.checked;
-                    const event = new Event('change');
-                    checkbox.dispatchEvent(event);
+                    if (checkbox) {
+                        checkbox.checked = !checkbox.checked;
+                        checkbox.dispatchEvent(new Event('change'));
+                    }
                 });
             });
-
-            console.log("=== LAYER CONTROLS INITIALIZATION COMPLETE ===");
-            console.log("Layers found - Poverty:", !!povertyLayer, "Vaccination:", !!vaccinationLayer, "Cases:", !!casesLayer);
-            
-            // Force map refresh
-            map.render();
         }
+
+        // Error handling for failed resource loading
+        window.addEventListener('error', function(e) {
+            console.error('Script loading error:', e);
+        });
         </script>
     </body>
 </html>
