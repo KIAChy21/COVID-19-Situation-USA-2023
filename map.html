@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="initial-scale=1,user-scalable=no,maximum-scale=1,width=device-width">
+        <meta name="mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <link rel="stylesheet" href="./resources/ol.css">
+        <link rel="stylesheet" href="resources/fontawesome-all.min.css">
+        <link href="resources/photon-geocoder-autocomplete.min.css" rel="stylesheet">
+        <link rel="stylesheet" href="./resources/ol-layerswitcher.css">
+        <link rel="stylesheet" href="./resources/qgis2web.css">
+        <style>
+        html, body {
+            background-color: #ffffff;
+        }
+        .ol-control > * {
+            background-color: #f8f8f8!important;
+            color: #444444!important;
+            border-radius: 0px;
+        }
+        .ol-attribution a, .gcd-gl-input::placeholder, .search-layer-input-search::placeholder {
+            color: #444444!important;
+        }
+        .search-layer-input-search {
+            background-color: #f8f8f8!important;
+        }
+        .ol-control > :focus, .ol-control >:hover {
+            background-color: rgba(248, 248, 248, 0.7)!important;
+        } 
+        .ol-control {
+            background-color: rgba(255,255,255,.4) !important;
+            padding: 2px !important;
+        } 
+        </style>
+
+        <style>
+        html, body, #map {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        
+        /* Custom Layer Control Styles */
+        .layer-control {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            z-index: 1000;
+            max-width: 280px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+        
+        .layer-control-title {
+            font-weight: bold;
+            margin-bottom: 12px;
+            text-align: center;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .layer-item {
+            margin-bottom: 12px;
+        }
+        
+        .layer-header {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 5px 0;
+        }
+        
+        .layer-checkbox {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+        
+        .layer-label {
+            font-weight: bold;
+            flex-grow: 1;
+            font-size: 14px;
+        }
+        
+        .legend-section {
+            margin-top: 8px;
+            margin-left: 25px;
+            border-left: 2px solid #eee;
+            padding-left: 10px;
+        }
+        
+        .legend-item {
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 15px;
+            margin-right: 8px;
+            border: 1px solid #666;
+            display: inline-block;
+        }
+        
+        .legend-label {
+            font-size: 12px;
+            line-height: 1.3;
+        }
+        </style>
+        <title>COVID-19 Vulnerability Map</title>
+    </head>
+    <body>
+        <div id="map">
+            <div id="popup" class="ol-popup">
+                <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+                <div id="popup-content"></div>
+            </div>
+            
+            <!-- Custom Layer Control -->
+            <div class="layer-control">
+                <div class="layer-control-title">Map Layers</div>
+                
+                <!-- Poverty Rate Layer -->
+                <div class="layer-item">
+                    <div class="layer-header">
+                        <input type="checkbox" class="layer-checkbox" id="checkbox-poverty" checked>
+                        <label class="layer-label" for="checkbox-poverty">Poverty Rate (%)</label>
+                    </div>
+                    <div class="legend-section">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(250,250,250,1.0)"></div>
+                            <div class="legend-label">0.0 - 9.3%</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(189,189,189,1.0)"></div>
+                            <div class="legend-label">9.3 - 12.0%</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(128,128,128,1.0)"></div>
+                            <div class="legend-label">12.0 - 14.8%</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(66,66,66,1.0)"></div>
+                            <div class="legend-label">14.8 - 19.0%</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(5,5,5,1.0)"></div>
+                            <div class="legend-label">19.0 - 64.7%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Vaccination Rate Layer -->
+                <div class="layer-item">
+                    <div class="layer-header">
+                        <input type="checkbox" class="layer-checkbox" id="checkbox-vaccination">
+                        <label class="layer-label" for="checkbox-vaccination">Vaccination Rate (%)</label>
+                    </div>
+                    <div class="legend-section">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(247,251,255,1.0)"></div>
+                            <div class="legend-label">0.0 - 37.4%</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(200,220,240,1.0)"></div>
+                            <div class="legend-label">37.4 - 44.0%</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(115,178,216,1.0)"></div>
+                            <div class="legend-label">44.0 - 50.2%</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(41,121,185,1.0)"></div>
+                            <div class="legend-label">50.2 - 57.8%</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(8,48,107,1.0)"></div>
+                            <div class="legend-label">57.8 - 95.0%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Cases per 1000 Layer -->
+                <div class="layer-item">
+                    <div class="layer-header">
+                        <input type="checkbox" class="layer-checkbox" id="checkbox-cases">
+                        <label class="layer-label" for="checkbox-cases">Cases per 1000</label>
+                    </div>
+                    <div class="legend-section">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(241,246,84,1.0)"></div>
+                            <div class="legend-label">0 - 311</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(243,186,70,1.0)"></div>
+                            <div class="legend-label">311 - 359</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(245,126,55,1.0)"></div>
+                            <div class="legend-label">359 - 396</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(247,67,41,1.0)"></div>
+                            <div class="legend-label">396 - 445</div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: rgba(249,7,27,1.0)"></div>
+                            <div class="legend-label">445 - 7593</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <script src="resources/qgis2web_expressions.js"></script>
+        <script src="./resources/functions.js"></script>
+        <script src="./resources/ol.js"></script>
+        <script src="./resources/ol-layerswitcher.js"></script>
+        <script src="resources/photon-geocoder-autocomplete.min.js"></script>
+        
+        <!-- GitHub Release Links -->
+        <script src="https://github.com/KIAChy21/COVID19-USA-2023-Vaccination-Analysis/releases/download/V1.0/PovertyratebyCountyin2023_0.js"></script>
+        <script src="https://github.com/KIAChy21/COVID19-USA-2023-Vaccination-Analysis/releases/download/V1.0/COVID19VaccinationRate_1.js"></script>
+        <script src="https://github.com/KIAChy21/COVID19-USA-2023-Vaccination-Analysis/releases/download/V1.0/COVID19casesper1000population_2.js"></script>
+        <script src="https://github.com/KIAChy21/COVID19-USA-2023-Vaccination-Analysis/releases/download/V1.0/layers.js"></script>
+        
+        <script src="styles/PovertyratebyCountyin2023_0_style.js"></script>
+        <script src="styles/COVID19VaccinationRate_1_style.js"></script>
+        <script src="styles/COVID19casesper1000population_2_style.js"></script>
+        <script src="./resources/Autolinker.min.js"></script>
+        <script src="./resources/qgis2web.js"></script>
+        
+        <script>
+        // Layer control functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for everything to load
+            setTimeout(initializeLayerControls, 1000);
+        });
+
+        function initializeLayerControls() {
+            console.log("=== INITIALIZING LAYER CONTROLS ===");
+            
+            // Add OpenStreetMap as base layer
+            var osmLayer = new ol.layer.Tile({
+                title: 'OpenStreetMap',
+                type: 'base',
+                visible: true,
+                source: new ol.source.OSM()
+            });
+            map.getLayers().insertAt(0, osmLayer);
+            console.log("✓ OpenStreetMap added");
+
+            // Method 1: Use global layer variables created by qgis2web
+            let povertyLayer, vaccinationLayer, casesLayer;
+            
+            // Check for global layer variables
+            if (typeof layer_PovertyratebyCountyin2023_0 !== 'undefined') {
+                povertyLayer = layer_PovertyratebyCountyin2023_0;
+                console.log("✓ Poverty layer found (global variable)");
+            }
+            
+            if (typeof layer_COVID19VaccinationRate_1 !== 'undefined') {
+                vaccinationLayer = layer_COVID19VaccinationRate_1;
+                console.log("✓ Vaccination layer found (global variable)");
+            }
+            
+            if (typeof layer_COVID19casesper1000population_2 !== 'undefined') {
+                casesLayer = layer_COVID19casesper1000population_2;
+                console.log("✓ Cases layer found (global variable)");
+            }
+
+            // Method 2: If global variables not found, search in map layers
+            if (!povertyLayer || !vaccinationLayer || !casesLayer) {
+                console.log("Searching for layers in map...");
+                map.getLayers().forEach(function(layer) {
+                    const title = layer.get('title');
+                    console.log("Map layer:", title);
+                    
+                    if (title && title.includes('Poverty')) {
+                        povertyLayer = layer;
+                        console.log("✓ Poverty layer identified in map");
+                    } else if (title && title.includes('Vaccination')) {
+                        vaccinationLayer = layer;
+                        console.log("✓ Vaccination layer identified in map");
+                    } else if (title && title.includes('Cases')) {
+                        casesLayer = layer;
+                        console.log("✓ Cases layer identified in map");
+                    }
+                });
+            }
+
+            // Method 3: Last resort - check layer order (usually data layers are last)
+            if (!povertyLayer || !vaccinationLayer || !casesLayer) {
+                console.log("Trying to identify layers by position...");
+                const layers = map.getLayers().getArray();
+                // Usually base layers first, then data layers
+                for (let i = layers.length - 1; i >= 0; i--) {
+                    if (!povertyLayer && layers[i].get('type') !== 'base') {
+                        povertyLayer = layers[i];
+                        console.log("✓ Assigned layer as Poverty (by position)");
+                    } else if (!vaccinationLayer && layers[i].get('type') !== 'base' && layers[i] !== povertyLayer) {
+                        vaccinationLayer = layers[i];
+                        console.log("✓ Assigned layer as Vaccination (by position)");
+                    } else if (!casesLayer && layers[i].get('type') !== 'base' && layers[i] !== povertyLayer && layers[i] !== vaccinationLayer) {
+                        casesLayer = layers[i];
+                        console.log("✓ Assigned layer as Cases (by position)");
+                    }
+                }
+            }
+
+            // Set initial visibility
+            if (povertyLayer) {
+                povertyLayer.setVisible(true);
+                console.log("✓ Poverty layer set to VISIBLE");
+            } else {
+                console.log("✗ Poverty layer NOT FOUND");
+            }
+            
+            if (vaccinationLayer) {
+                vaccinationLayer.setVisible(false);
+                console.log("✓ Vaccination layer set to HIDDEN");
+            } else {
+                console.log("✗ Vaccination layer NOT FOUND");
+            }
+            
+            if (casesLayer) {
+                casesLayer.setVisible(false);
+                console.log("✓ Cases layer set to HIDDEN");
+            } else {
+                console.log("✗ Cases layer NOT FOUND");
+            }
+
+            // Setup event handlers
+            const povertyCheckbox = document.getElementById('checkbox-poverty');
+            const vaccinationCheckbox = document.getElementById('checkbox-vaccination');
+            const casesCheckbox = document.getElementById('checkbox-cases');
+
+            // Poverty layer control
+            povertyCheckbox.addEventListener('change', function(e) {
+                console.log("Poverty checkbox:", e.target.checked);
+                if (povertyLayer) {
+                    povertyLayer.setVisible(e.target.checked);
+                    console.log("✓ Poverty visibility updated to:", e.target.checked);
+                }
+            });
+
+            // Vaccination layer control
+            vaccinationCheckbox.addEventListener('change', function(e) {
+                console.log("Vaccination checkbox:", e.target.checked);
+                if (vaccinationLayer) {
+                    vaccinationLayer.setVisible(e.target.checked);
+                    console.log("✓ Vaccination visibility updated to:", e.target.checked);
+                }
+            });
+
+            // Cases layer control
+            casesCheckbox.addEventListener('change', function(e) {
+                console.log("Cases checkbox:", e.target.checked);
+                if (casesLayer) {
+                    casesLayer.setVisible(e.target.checked);
+                    console.log("✓ Cases visibility updated to:", e.target.checked);
+                }
+            });
+
+            // Add click handlers for labels
+            document.querySelectorAll('.layer-label').forEach(function(label) {
+                label.addEventListener('click', function() {
+                    const checkbox = this.previousElementSibling;
+                    checkbox.checked = !checkbox.checked;
+                    const event = new Event('change');
+                    checkbox.dispatchEvent(event);
+                });
+            });
+
+            console.log("=== LAYER CONTROLS INITIALIZATION COMPLETE ===");
+            console.log("Layers found - Poverty:", !!povertyLayer, "Vaccination:", !!vaccinationLayer, "Cases:", !!casesLayer);
+            
+            // Force map refresh
+            map.render();
+        }
+        </script>
+    </body>
+</html>

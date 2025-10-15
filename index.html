@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COVID-19 Vulnerability Map</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 2.5em;
+        }
+        
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+        
+        .description {
+            margin-bottom: 40px;
+        }
+        
+        .description h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin: 30px 0;
+        }
+        
+        .feature-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .feature-card h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .fullscreen-button {
+            display: block;
+            width: 200px;
+            margin: 40px auto;
+            background: #27ae60;
+            color: white;
+            text-align: center;
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1.2em;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+        }
+        
+        .fullscreen-button:hover {
+            background: #219653;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+        }
+        
+        .instructions {
+            background: #e8f4f8;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .instructions h3 {
+            color: #2c3e50;
+            margin-top: 0;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>COVID-19 Vulnerability Analysis Map</h1>
+            <p>Interactive Visualization of Public Health Data Across US Counties</p>
+        </div>
+
+        <div class="description">
+            <h2>About This Project</h2>
+            <p>This interactive mapping platform provides comprehensive insights into COVID-19 vulnerability factors across United States counties. By integrating socioeconomic data with public health metrics, we enable researchers, policymakers, and the public to explore regional disparities in pandemic impact and preparedness.</p>
+            
+            <p>The map combines multiple datasets to visualize key indicators including poverty rates, vaccination coverage, and COVID-19 case incidence, allowing for comparative analysis and identification of vulnerable regions.</p>
+        </div>
+
+        <div class="features">
+            <div class="feature-card">
+                <h3>📊 Poverty Rate Analysis</h3>
+                <p>Explore county-level poverty data to understand socioeconomic vulnerability and resource distribution patterns across different regions.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>💉 Vaccination Coverage</h3>
+                <p>Visualize immunization rates to identify areas with varying levels of protection and potential gaps in vaccination infrastructure.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🦠 Case Incidence Mapping</h3>
+                <p>Analyze COVID-19 case rates per 1000 population to understand geographic patterns of disease spread and outbreak hotspots.</p>
+            </div>
+        </div>
+
+        <a href="map.html" class="fullscreen-button" target="_blank">
+            🗺 View Interactive Map
+        </a>
+
+        <div class="instructions">
+            <h3>How to Use the Interactive Map</h3>
+            <ul>
+                <li><strong>Layer Controls</strong>: Use the checkboxes in the top-right corner to toggle different datasets on/off</li>
+                <li><strong>Navigation</strong>: Zoom with mouse wheel and pan by clicking/dragging the map</li>
+                <li><strong>Detailed Information</strong>: Click on any county to view detailed popup information</li>
+                <li><strong>Multiple Views</strong>: Compare different vulnerability factors by showing/hiding layers</li>
+            </ul>
+            
+            <h3>Data Sources & Methodology</h3>
+            <p>This visualization integrates data from the US Census Bureau, CDC vaccination records, and state health department case reports. All data is normalized and aggregated at the county level for consistent comparison.</p>
+        </div>
+    </div>
+</body>
+</html>
